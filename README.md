@@ -39,4 +39,4 @@ sudo sudo systemctl restart sshd
 
 ## Client
 
-To connect to the proxy, you can use the client implementation in [pkg/client](pkg/client). In [examples/client](examples/client]), you can find a simple example on how to use the client implementation.
+To connect to the proxy, you can use the client implementation in [pkg/client](pkg/client). In [examples/client](examples/client), you can find a simple example on how to use the client implementation.
