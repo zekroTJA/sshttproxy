@@ -24,25 +24,49 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "^1.24"
-      - name: Check out code into the Go module directory
+
+      - name: Check out code
         uses: actions/checkout@v4
+
       - name: Set Asset Path
-        if: ${{ matrix.goos == 'windows' }}
         shell: bash
-        run: echo "ASSET_PATH=./bin/sshttproxy-${{ matrix.goos }}-${{ matrix.goarch }}.exe" >> $GITHUB_ENV
-      - name: Set Asset Path
-        if: ${{ matrix.goos != 'windows' }}
-        shell: bash
-        run: echo "ASSET_PATH=./bin/sshttproxy-${{ matrix.goos }}-${{ matrix.goarch }}" >> $GITHUB_ENV
-      - name: Build Client (${{ matrix.goos }}-${{ matrix.goarch }})
+        run: |
+          if [[ "${{ matrix.goos }}" == "windows" ]]; then
+            echo "ASSET_PATH=bin/sshttproxy-${{ matrix.goos }}-${{ matrix.goarch }}.exe" >> $GITHUB_ENV
+          else
+            echo "ASSET_PATH=bin/sshttproxy-${{ matrix.goos }}-${{ matrix.goarch }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build Binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: go build -v -o ${{ env.ASSET_PATH }} ./cmd/proxy/main.go
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: ${{ env.ASSET_PATH }}
+          name: sshttproxy-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.ASSET_PATH }}
+
+  create_release:
+    name: Create GitHub Release
+    needs: build_artifacts
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: List downloaded files (debug)
+        run: ls -R ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
