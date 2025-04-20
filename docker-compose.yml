@@ -1,0 +1,17 @@
+# This setup can be used for testing and demonstration.
+
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: Dev.Dockerfile
+    image: ssh-proxy-subsystem
+    ports:
+      - "10222:22"
+
+  server:
+    image: ghcr.io/zekrotja/echo
+    expose:
+      - "80"
+    environment:
+      ECHO_VERBOSITY: "3"
