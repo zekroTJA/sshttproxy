@@ -34,7 +34,7 @@ SSHTTPROXY_LOGLEVEL="info"
 
 After that, restart the sshd service.
 ```bash
-sudo sudo systemctl restart sshd
+sudo systemctl restart sshd
 ```
 
 ## Client
